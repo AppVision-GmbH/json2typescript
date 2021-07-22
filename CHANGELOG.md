@@ -1,3 +1,17 @@
+# v1.5.0 (2021-07-23)
+
+## Bug Fixes
+
+* Fix handling of array property type mapping, fixed with PR [#142](https://github.com/appvision-gmbh/json2typescript/pull/142)
+
+## Features
+
+* Improve method types, closes [#137](https://github.com/appvision-gmbh/json2typescript/pull/137)
+* Add more optional property flags, closes [#138](https://github.com/appvision-gmbh/json2typescript/pull/138)
+* Add esm module format in order to fix CommonJS issue with Angular 10, closes [#147](https://github.com/appvision-gmbh/json2typescript/issues/147)
+* Improved docs about property initialization, closes [#149](https://github.com/appvision-gmbh/json2typescript/pull/149)
+* Implement discriminator feature, closes [#165](https://github.com/appvision-gmbh/json2typescript/pull/165)
+
 # v1.4.1 (2020-04-14)
 
 ## Bug Fixes

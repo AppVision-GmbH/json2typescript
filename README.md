@@ -229,27 +229,6 @@ Even if you don't have any errors in your IDE, `json2typescript` will not proper
 
 # Detailed reference
 
-## Property declarations
-
-For class properties to be visible to the mapper they **must be initialized**, otherwise they are ignored. They can be initialized using any (valid) value or `undefined`.
-
-```typescript
-@JsonObject("User")
-export class User {
-    @JsonProperty("name", String, false)  // ✔ Decorator
-    name: string = "";  ✔ Initialization
-    
-    @JsonProperty("alias", string, false)  // ❌ Must use String instead.
-    alias: string = ""; //  ✔ Initialization
-    
-    @JsonProperty("expertise", String, false) ✔ Decorator
-    expertise: string;  //  ❌ Must be initialised, otherwise is ignored.
-}
-```
-
-> **Warning**: Non initialized properties won't trigger any exception, as **they are invisible to the mapper**.
-
-
 ## Class and property decorators
 
 Decorators should be used whenever you would like to map JSON with TypeScript data. 
@@ -277,15 +256,30 @@ The first parameter of `@JsonObject` must be a unique class identifier, usually 
 
 Property decorators are a vital part for type checking. It is important that the type in the decorator matches the TypeScript type.
 
+For class properties to be visible to the mapper they **must be initialized**, otherwise they are ignored. 
+They can be initialized using any (valid) value or `undefined`.
+See the example below for better understanding:
+
 ```typescript
 @JsonObject("User")
 export class User {
-    @JsonProperty("jsonPropertyName", String, false)
+    
+    // A correct example
+    @JsonProperty("name", String, false)
     name: string = "";
+    
+    // An incorrect example
+    @JsonProperty("alias", string, false) // Wrong type: Must use String instead.
+    alias: string = "";
+  
+    // An incorrect example
+    @JsonProperty("expertise", String, false)
+    expertise: string; // No initialization: Property will be ignored without visible exception
+    
 }
 ```
 
-> **Important note**: You must assign any (valid) value or `undefined` to your property at initialization, otherwise our mapper does **not** work and will simply ignore the property. Assigning no value is not the same as assigning `undefined` in context of `json2typescript`.
+> **Important note**: You must assign any (valid) value or `undefined` to your property at initialization, otherwise our mapper does **not** work and will simply ignore the property. Assigning no value is not the same as assigning `undefined` in context of `json2typescript`. Non-initialized properties will not trigger any exception, as **they are invisible to the mapper**.
 
 > Tip: Make sure you import `JsonObject` and `JsonProperty` from `json2typescript`.
 
