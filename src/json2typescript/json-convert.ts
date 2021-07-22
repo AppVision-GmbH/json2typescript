@@ -1,4 +1,4 @@
-import { OperationMode, PropertyMatchingRule, ValueCheckingMode } from "./json-convert-enums";
+import { OperationMode, PropertyConvertingMode, PropertyMatchingRule, ValueCheckingMode } from "./json-convert-enums";
 import { MappingOptions, Settings } from "./json-convert-options";
 import { Any } from "./any";
 
@@ -641,7 +641,7 @@ export class JsonConvert {
         // Get expected and real values
         let jsonPropertyName: string = mappingOptions.jsonPropertyName;
         let expectedJsonType: any = mappingOptions.expectedJsonType;
-        let isOptional: boolean = mappingOptions.isOptional;
+        let isOptional: PropertyConvertingMode = mappingOptions.isOptional;
         let customConverter: any = mappingOptions.customConverter;
 
         let classInstancePropertyValue: any = dataObject[classPropertyName];
@@ -650,7 +650,11 @@ export class JsonConvert {
         // Check if the class property value exists
         if (typeof (classInstancePropertyValue) === "undefined") {
 
-            if (isOptional || this._ignoreRequiredCheck) return;
+            if (isOptional === PropertyConvertingMode.ALWAYS_OPTIONAL ||
+                isOptional === PropertyConvertingMode.SERIALIZE_OPTIONAL ||
+                this._ignoreRequiredCheck) {
+                return;
+            }
 
             throw new Error(
                 "Fatal error in JsonConvert. " +
@@ -661,9 +665,18 @@ export class JsonConvert {
         }
 
 
-        // Check if the property is optional
-        // If the json value is null, we don't assign it in that case
-        if (isOptional && classInstancePropertyValue === null) return;
+        // Check if the json value is null.
+        // If the property is optional, then drop the property.
+        // If the property is not optional, assign null value to json.
+        if (classInstancePropertyValue === null) {
+            if (isOptional === PropertyConvertingMode.ALWAYS_OPTIONAL ||
+                isOptional === PropertyConvertingMode.SERIALIZE_OPTIONAL) {
+                return;
+            } else {
+                json[jsonPropertyName] = null;
+                return;
+            }
+        }
 
 
         // Map the property
@@ -702,7 +715,7 @@ export class JsonConvert {
         // Get expected and real values
         let jsonPropertyName: string = mappingOptions.jsonPropertyName;
         let expectedJsonType: any = mappingOptions.expectedJsonType;
-        let isOptional: boolean = mappingOptions.isOptional;
+        let isOptional: PropertyConvertingMode = mappingOptions.isOptional;
         let customConverter: any = mappingOptions.customConverter;
 
         let jsonValue: any = undefined;
@@ -715,7 +728,9 @@ export class JsonConvert {
         // Check if the json value exists
         if (typeof (jsonValue) === "undefined") {
 
-            if (isOptional || this._ignoreRequiredCheck) return;
+            if (isOptional === PropertyConvertingMode.ALWAYS_OPTIONAL ||
+                isOptional === PropertyConvertingMode.DESERIALIZE_OPTIONAL ||
+                this._ignoreRequiredCheck) return;
 
             throw new Error(
                 "Fatal error in JsonConvert. " +
@@ -726,9 +741,13 @@ export class JsonConvert {
         }
 
 
-        // Check if the property is optional
-        // If the json value is null, we don't assign it in that case
-        if (isOptional && jsonValue === null) return;
+        // Check if the json value is null.
+        // If the property is optional, do not assign it because we want to use the default value of the class.
+        // Otherwise, proceed with the verification. We will only assign null if it is allowed.
+        if (jsonValue === null) {
+            if (isOptional === PropertyConvertingMode.ALWAYS_OPTIONAL ||
+                isOptional === PropertyConvertingMode.DESERIALIZE_OPTIONAL) return;
+        }
 
 
         // Map the property

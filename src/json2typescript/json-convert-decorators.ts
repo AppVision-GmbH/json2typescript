@@ -1,5 +1,6 @@
 import { MappingOptions, Settings } from "./json-convert-options";
 import { Any } from "./any";
+import { PropertyConvertingMode } from "./json-convert-enums";
 
 /**
  * Decorator of a class that is a custom converter.
@@ -87,7 +88,7 @@ export function JsonObject(target: string | any): (target: any) => void {
  *
  * @param jsonPropertyName optional param (default: classPropertyName) the property name in the expected JSON object
  * @param conversionOption optional param (default: Any), should be either the expected type (String|Boolean|Number|etc) or a custom converter class implementing JsonCustomConvert
- * @param isOptional optional param (default: false), if true, the json property does not have to be present in the object
+ * @param isOptional optional param (default: PropertyConvertingMode.NEVER_OPTIONAL), parameter to determine whether the property has to be present in the object
  *
  * @returns
  *
@@ -100,7 +101,7 @@ export function JsonProperty(...params: any[]): { (target: any, classPropertyNam
 
         let jsonPropertyName: string = classPropertyName;
         let conversionOption: any = Any;
-        let isOptional: boolean = false;
+        let isOptional: PropertyConvertingMode = PropertyConvertingMode.NEVER_OPTIONAL;
 
         switch (params.length) {
             case 1:
@@ -148,7 +149,16 @@ export function JsonProperty(...params: any[]): { (target: any, classPropertyNam
                 );
                 jsonPropertyName = params[0];
                 conversionOption = params[1];
-                isOptional = params[2];
+                if (params[2] === true) {
+                    isOptional = PropertyConvertingMode.ALWAYS_OPTIONAL;
+                } else if (params[2] === PropertyConvertingMode.NEVER_OPTIONAL ||
+                    params[2] === PropertyConvertingMode.ALWAYS_OPTIONAL ||
+                    params[2] === PropertyConvertingMode.SERIALIZE_OPTIONAL ||
+                    params[2] === PropertyConvertingMode.DESERIALIZE_OPTIONAL) {
+                    isOptional = params[2];
+                } else {
+                    isOptional = PropertyConvertingMode.NEVER_OPTIONAL;
+                }
                 break;
             default:
                 break;
@@ -162,7 +172,7 @@ export function JsonProperty(...params: any[]): { (target: any, classPropertyNam
         let jsonPropertyMappingOptions = new MappingOptions();
         jsonPropertyMappingOptions.classPropertyName = classPropertyName;
         jsonPropertyMappingOptions.jsonPropertyName = jsonPropertyName;
-        jsonPropertyMappingOptions.isOptional = isOptional ? isOptional : false;
+        jsonPropertyMappingOptions.isOptional = isOptional;
 
         // Check if conversionOption is a type or a custom converter.
         if (typeof(conversionOption) !== "undefined" && conversionOption !== null && typeof(conversionOption[Settings.MAPPER_PROPERTY]) !== "undefined") {

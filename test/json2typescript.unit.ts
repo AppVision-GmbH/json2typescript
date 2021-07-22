@@ -1,5 +1,10 @@
 import { JsonConvert } from "../src/json2typescript/json-convert";
-import { OperationMode, PropertyMatchingRule, ValueCheckingMode } from "../src/json2typescript/json-convert-enums";
+import {
+    OperationMode,
+    PropertyConvertingMode,
+    PropertyMatchingRule,
+    ValueCheckingMode
+} from "../src/json2typescript/json-convert-enums";
 import { Any } from "../src/json2typescript/any";
 import { MappingOptions, Settings } from "../src/json2typescript/json-convert-options";
 import { Human } from "./model/typescript/human";
@@ -290,7 +295,7 @@ describe('Unit tests', () => {
                 catNameMapping.classPropertyName = "name";
                 catNameMapping.jsonPropertyName = "catName";
                 catNameMapping.expectedJsonType = jsonType;
-                catNameMapping.isOptional = false;
+                catNameMapping.isOptional = PropertyConvertingMode.NEVER_OPTIONAL;
                 catNameMapping.customConverter = null;
                 expect((<any>jsonConvert).getClassPropertyMappingOptions(cat1, "name")).toEqual(catNameMapping);
 
@@ -298,7 +303,7 @@ describe('Unit tests', () => {
                 dogNameMapping.classPropertyName = "name";
                 dogNameMapping.jsonPropertyName = "name";
                 dogNameMapping.expectedJsonType = jsonType;
-                dogNameMapping.isOptional = false;
+                dogNameMapping.isOptional = PropertyConvertingMode.NEVER_OPTIONAL;
                 dogNameMapping.customConverter = null;
                 expect((<any>jsonConvert).getClassPropertyMappingOptions(dog1, "name")).toEqual(dogNameMapping);
 
@@ -308,7 +313,7 @@ describe('Unit tests', () => {
                 duplicateCatTalkyMapping.classPropertyName = "talky";
                 duplicateCatTalkyMapping.jsonPropertyName = "talky";
                 duplicateCatTalkyMapping.expectedJsonType = undefined;
-                duplicateCatTalkyMapping.isOptional = false;
+                duplicateCatTalkyMapping.isOptional = PropertyConvertingMode.NEVER_OPTIONAL;
                 duplicateCatTalkyMapping.customConverter = new DateConverter();
                 expect((<any>jsonConvert).getClassPropertyMappingOptions(duplicateCat1, "talky")).toEqual(duplicateCatTalkyMapping);
 

@@ -43,3 +43,22 @@ export enum ValueCheckingMode {
     ALLOW_OBJECT_NULL = 2,
     DISALLOW_NULL = 3
 };
+
+
+/**
+ * Enum for the property converting mode of a property (de)serialized with JsonConvert.
+ *
+ * The values should be used as follows:
+ * - NEVER_OPTIONAL: the property is never optional
+ * - ALWAYS_OPTIONAL: the property is always optional
+ * - SERIALIZE_OPTIONAL: the property is optional in serialization only
+ * - DESERIALIZE_OPTIONAL: the property is optional in deserialization only
+ *
+ * @see https://www.npmjs.com/package/json2typescript full documentation
+ */
+export enum PropertyConvertingMode {
+    NEVER_OPTIONAL = 0,
+    ALWAYS_OPTIONAL = 1,
+    SERIALIZE_OPTIONAL = 2,
+    DESERIALIZE_OPTIONAL = 3
+};

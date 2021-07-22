@@ -1,6 +1,8 @@
 /**
  * Internal constants.
  */
+import { PropertyConvertingMode } from "./json-convert-enums";
+
 export class Settings {
     static readonly MAPPING_PROPERTY = "__jsonconvert__mapping__";
     static readonly MAPPER_PROPERTY = "__jsonconvert__mapper__";
@@ -14,6 +16,6 @@ export class MappingOptions {
     classPropertyName: string = "";
     jsonPropertyName: string = "";
     expectedJsonType?: string = undefined;
-    isOptional: boolean = false;
+    isOptional: PropertyConvertingMode = PropertyConvertingMode.NEVER_OPTIONAL;
     customConverter: any = null;
 }
