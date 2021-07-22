@@ -183,6 +183,100 @@ export class JsonConvert {
         this._ignoreRequiredCheck = value;
     }
 
+    /**
+     * Determines if discriminators should be used.
+     * If this option is set to 'true', all properties of a type provided in the 'classes' property
+     * will be serialized with an additional discriminator property (default: '$type'), which has the
+     * name of the class as value.
+     * If an object containing the discriminator property is deserialized, the name of the class will be used
+     * to instantiate the correct type.
+     *
+     * @see https://www.npmjs.com/package/json2typescript full documentation
+     */
+    private _useDiscriminator: boolean = false;
+
+    /**
+     * Determines if discriminators should be used.
+     * If this option is set to 'true', all properties of a type provided in the 'classes' property
+     * will be serialized with an additional discriminator property (default: '$type'), which has the
+     * name of the class as value.
+     * If an object containing the discriminator property is deserialized, the name of the class will be used
+     * to instantiate the correct type.
+     *
+     * @see https://www.npmjs.com/package/json2typescript full documentation
+     */
+    get useDiscriminator(): boolean {
+        return this._useDiscriminator;
+    }
+
+    /**
+     * Determines if discriminators should be used.
+     * If this option is set to 'true', all properties of a type provided in the 'classes' property
+     * will be serialized with an additional discriminator property (default: '$type'), which has the
+     * name of the class as value.
+     * If an object containing the discriminator property is deserialized, the name of the class will be used
+     * to instantiate the correct type.
+     *
+     * @see https://www.npmjs.com/package/json2typescript full documentation
+     */
+    set useDiscriminator(value: boolean) {
+        this._useDiscriminator = value;
+    }
+
+    /**
+      * Defines the name of the discriminator property.
+      *
+      * @see https://www.npmjs.com/package/json2typescript full documentation
+      */
+     private _discriminatorPropertyName: string = "$type";
+
+     /**
+      * Defines the name of the discriminator property.
+      *
+      * @see https://www.npmjs.com/package/json2typescript full documentation
+      */
+     get discriminatorPropertyName(): string {
+         return this._discriminatorPropertyName;
+     }
+ 
+     /**
+      * Defines the name of the discriminator property.
+      *
+      * @see https://www.npmjs.com/package/json2typescript full documentation
+      */
+     set discriminatorPropertyName(value: string) {
+         this._discriminatorPropertyName = value;
+     }
+
+    /**
+     * Determines all classes which should use the discriminator feature.
+     * Only classes provided here can be enriched with the discriminator property.
+     *
+     * @see https://www.npmjs.com/package/json2typescript full documentation
+     */
+    private _classes: Record<string, (new() => any)> = {};
+
+    /**
+     * Determines all classes which should use the discriminator feature.
+     * Only classes provided here can be enriched with the discriminator property.
+     *
+     * @see https://www.npmjs.com/package/json2typescript full documentation
+     */
+    get classes(): Record<string, (new() => any)> {
+        return this._classes;
+    }
+
+    /**
+     * Determines all classes which should use the discriminator feature.
+     * Only classes provided here can be enriched with the discriminator property.
+     *
+     * @see https://www.npmjs.com/package/json2typescript full documentation
+     */
+    set classes(value: Record<string, (new() => any)>) {
+        this._classes = value;
+    }
+
+
     /////////////////
     // CONSTRUCTOR //
     /////////////////
@@ -669,6 +763,12 @@ export class JsonConvert {
         // Map the property
         try {
             json[jsonPropertyName] = customConverter !== null ? customConverter.serialize(classInstancePropertyValue) : this.verifyProperty(expectedJsonType, classInstancePropertyValue, true);
+
+            const classConstructorName = dataObject?.constructor?.name;
+
+            if (this._useDiscriminator && this._classes[classConstructorName]) {
+                json[this._discriminatorPropertyName] = classConstructorName;
+            }
         } catch (e) {
             throw new Error(
                 "Fatal error in JsonConvert. " +
@@ -733,6 +833,12 @@ export class JsonConvert {
 
         // Map the property
         try {
+            const classConstructorName = jsonValue[this._discriminatorPropertyName];
+
+            if (this._useDiscriminator && this._classes[classConstructorName]) {
+                expectedJsonType = this._classes[classConstructorName];
+            }
+
             instance[classPropertyName] = customConverter !== null ? customConverter.deserialize(jsonValue) : this.verifyProperty(expectedJsonType, jsonValue);
         } catch (e) {
             throw new Error(

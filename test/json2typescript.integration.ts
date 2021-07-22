@@ -12,6 +12,7 @@ import { IDuplicateCat } from "./model/json/i-duplicate-cat";
 import { IOptionalCat } from './model/json/i-optional-cat';
 import { OptionalCat } from './model/typescript/optional-cat';
 import { IAnimal } from './model/json/i-animal';
+import { AnimalHolder } from "./model/typescript/animal-holder";
 
 describe('Integration tests', () => {
 
@@ -51,6 +52,18 @@ describe('Integration tests', () => {
         let duplicateCat1SerializeJsonObject: IDuplicateCat = {
             name: "Duplicate",
             talky: "2015-02-03"
+        };
+        let animalHolderWithDogJsonObject = {
+            name: "Laura",
+            animal: {
+                $type: "Dog",
+                name: "Barky",
+                barking: true,
+                birthdate: "2017-02-12",
+                friends: [],
+                other: 0,
+                toys: ["pizza", "bone", "ball"]
+            }
         };
         // Add district property, which exists on DuplicateCat but is not mapped - should not be deserialized
         let duplicateCat2DeserializeJsonObject = {
@@ -122,6 +135,9 @@ describe('Integration tests', () => {
 
         let animals = [cat1, dog1];
         let cats = [cat1, cat2];
+
+        let animalHolder = new AnimalHolder();
+        animalHolder.name = "Lisa";
 
         // JSON objects using Typescript mappings
         let cat1Typescript: any = {
@@ -238,6 +254,30 @@ describe('Integration tests', () => {
                   .toEqual([String], "expectedJsonType after serializing");
             });
 
+            it('should not add discriminator property to json if disabled', () => {
+                animalHolder.animal = dog1;
+                expect(jsonConvert.serialize<AnimalHolder>(animalHolder).animal.$type).toEqual(undefined);
+                animalHolder.animal = null;
+            });
+
+            it('should add discriminator property to json if enabled and class provided', () => {
+                jsonConvert.useDiscriminator = true;
+                jsonConvert.classes = {"Dog": Dog};
+                animalHolder.animal = dog1;
+                expect(jsonConvert.serialize<AnimalHolder>(animalHolder).animal.$type).toEqual("Dog");
+                animalHolder.animal = null;
+                jsonConvert.classes = {};
+                jsonConvert.useDiscriminator = false;
+            });
+
+            it('should not add discriminator property to json if enabled but class not provided', () => {
+                jsonConvert.useDiscriminator = true;
+                animalHolder.animal = dog1;
+                expect(jsonConvert.serialize<AnimalHolder>(animalHolder).animal.$type).toEqual(undefined);
+                animalHolder.animal = null;
+                jsonConvert.useDiscriminator = false;
+            });
+
         });
 
         // DESERIALIZE INTEGRATION
@@ -296,6 +336,33 @@ describe('Integration tests', () => {
                 jsonConvert.deserialize(dog1JsonObject, Dog);
                 expect((<any>jsonConvert).getClassPropertyMappingOptions(dog2, "toys").expectedJsonType)
                   .toEqual([String], "expectedJsonType after deserializing");
+            });
+
+            it('should get class from discriminator property if enabled', () => {
+                jsonConvert.useDiscriminator = true;
+                jsonConvert.classes = {"Dog": Dog};
+                const result = <AnimalHolder> jsonConvert.deserialize<AnimalHolder>(animalHolderWithDogJsonObject, AnimalHolder);
+                expect(result.animal).toBeInstanceOf(Dog);
+                jsonConvert.classes = {};
+                jsonConvert.useDiscriminator = false;
+            });
+
+            it('should not get class from discriminator property if disabled', () => {
+                jsonConvert.classes = {"Dog": Dog};
+                const result = <AnimalHolder> jsonConvert.deserialize<AnimalHolder>(animalHolderWithDogJsonObject, AnimalHolder);
+                expect(result.animal).toBeInstanceOf(Animal);
+                const isDog = result.animal instanceof Dog;
+                expect(isDog).toBeFalse();
+                jsonConvert.classes = {};
+            });
+
+            it('should not get class from discriminator property if enabled but no classes provided', () => {
+                jsonConvert.useDiscriminator = true;
+                const result = <AnimalHolder> jsonConvert.deserialize<AnimalHolder>(animalHolderWithDogJsonObject, AnimalHolder);
+                expect(result.animal).toBeInstanceOf(Animal);
+                const isDog = result.animal instanceof Dog;
+                expect(isDog).toBeFalse();
+                jsonConvert.useDiscriminator = false;
             });
 
         });
